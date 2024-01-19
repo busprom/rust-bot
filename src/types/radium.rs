@@ -71,3 +71,12 @@ pub struct Query {
   pub min_amount_out: u64,
   pub min_quote_in: u128
 }
+
+#[derive(BorshSerialize, BorshDeserialize, PartialEq, Debug, Clone)]
+pub struct Bot {
+  pub side: u8, //0 buy / 1 sell,
+  pub amount_in: u64, 
+  pub min_amount_out: u64,
+  pub min_quote_in: u128,
+  pub quote: Pubkey
+}

@@ -5,5 +5,6 @@ use crate::{
 
 #[derive(BorshSerialize, BorshDeserialize, Debug)]
 pub enum SolInstruction {
-	Radium {data: Query}
+	Radium {data: Query},
+	RadiumTest {data: Query}
 }

@@ -11,3 +11,4 @@ pub mod entrypoint;
 
 
 pub const ADMIN_ID: &str = "Euy2YtCb7sQvFQu3ohS1eqe72g6yRqqEu1eZVwg9oqUG";
+pub const PDA_SEED: &str = "3ij4LFLZ9dpWDtwcq5dDGVnKEHary67r";
