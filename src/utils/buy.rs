@@ -70,14 +70,16 @@ pub fn process_buy<'a>(
     min_amount_out: query.min_amount_out
   };
 
-  process_create_pda(
-    user_owner,
-    user_source_token_account,
-    token_program,
-    rent_program,
-    sol,
-    query
-  )?;
+  if user_source_token_account.data_is_empty() {
+    process_create_pda(
+      user_owner,
+      user_source_token_account,
+      token_program,
+      rent_program,
+      sol,
+      query
+    )?;
+  }
 
   process_create_token_account(
     user_owner,
