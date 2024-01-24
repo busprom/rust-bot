@@ -80,3 +80,8 @@ pub struct Bot {
   pub min_quote_in: u128,
   pub quote: Pubkey
 }
+
+#[derive(BorshSerialize, BorshDeserialize, PartialEq, Debug, Clone)]
+pub struct Sell {
+  pub to_sell: u64
+}

@@ -1,20 +1,20 @@
-use borsh::BorshDeserialize;
 use solana_program::{
 	msg,
 	entrypoint::ProgramResult,
-	account_info::AccountInfo,
-  sysvar::{Sysvar, clock::Clock}
+	account_info::AccountInfo
 };
 use crate::{
   token::{
     swap::process_swap,
-    create_token_account::process_create_token_account,
-    create_pda::process_create_pda
+    create_token_account::process_create_token_account
   },
-  types::radium::{RadiumV4, Swap, Query}
+  types::radium::{Swap, Sell}
 };
+use spl_token::state::Account;
+use solana_program::program_pack::Pack;
 
-pub fn process_buy<'a>(
+
+pub fn process_sell<'a>(
   token_program: &AccountInfo<'a>,
   amm_id: &AccountInfo<'a>,
   amm_authority: &AccountInfo<'a>,
@@ -34,67 +34,37 @@ pub fn process_buy<'a>(
   user_dest_token_account: &AccountInfo<'a>,
   user_owner: &AccountInfo<'a>,
   swap_program: &AccountInfo<'a>,
-  token_mint: &AccountInfo<'a>,
   rent_program: &AccountInfo<'a>,
   system_program: &AccountInfo<'a>,
   spl_token_program: &AccountInfo<'a>,
   sol: &AccountInfo<'a>,
-  query: Query
+  sell: Sell
 ) -> ProgramResult {
-  msg!("Go!");
+  msg!("Sell");
   
-
-  if query.side == 0 {
-    let stake = RadiumV4::try_from_slice(&amm_id.data.borrow())?;
-
-    msg!("{}", stake.swap_quote_in_amount / 1000000000);
-    msg!("{}", stake.swap_quote_out_amount / 1000000000);
-
-    if stake.swap_quote_in_amount > query.min_quote_in {
-      return Ok(());
-    }
-
-    let cl = Clock::get().unwrap();
-    let current = cl.unix_timestamp as u64;
-
-    if current < stake.pool_open_time {
-      return Ok(());
-    }
-    
-    // let diferent = stake.swap_quote_in_amount - stake.swap_quote_out_amount;
-    // if diferent > query.min_quote_in {
-    //   return Ok(());
-    // }
-
-  }
-
-  let data = Swap {
-    instruction: 9,
-    amount_in: query.amount_in,
-    min_amount_out: query.min_amount_out
-  };
-
-  if user_source_token_account.data_is_empty() {
-    process_create_pda(
-      user_owner,
-      user_source_token_account,
-      token_program,
-      rent_program,
-      sol,
-      query
-    )?;
-  }
-
   process_create_token_account(
     user_owner,
     user_owner,
-    token_mint,
+    sol,
     user_dest_token_account,
     token_program,
     rent_program,
     system_program,
     spl_token_program
   )?;
+
+  let spl_token_account_data = user_source_token_account.try_borrow_data()?;
+  let spl_token_account = Account::unpack(&spl_token_account_data)?;
+
+  let amount_in = (((spl_token_account.amount * sell.to_sell) / 100) as f32).floor() as u64;
+  
+  let data = Swap {
+    instruction: 9,
+    amount_in,
+    min_amount_out: 0
+  };
+
+  drop(spl_token_account_data);
 
   process_swap(
     token_program,
