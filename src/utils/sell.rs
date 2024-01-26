@@ -56,7 +56,11 @@ pub fn process_sell<'a>(
   let spl_token_account_data = user_source_token_account.try_borrow_data()?;
   let spl_token_account = Account::unpack(&spl_token_account_data)?;
 
-  let amount_in = (((spl_token_account.amount * sell.to_sell) / 100) as f32).floor() as u64;
+  let mut amount_in = (((spl_token_account.amount * sell.to_sell) / 100) as f32).floor() as u64;
+
+  if sell.to_sell == 100 {
+    amount_in = spl_token_account.amount;
+  }
   
   let data = Swap {
     instruction: 9,
