@@ -43,13 +43,11 @@ pub fn process_buy<'a>(
 ) -> ProgramResult {
   msg!("Go!");
   
-
+  let stake = RadiumV4::try_from_slice(&amm_id.data.borrow())?;
+  msg!("{}", stake.swap_quote_in_amount / 1000000000);
+  msg!("{}", stake.swap_quote_out_amount / 1000000000);
+  
   if query.side == 0 {
-    let stake = RadiumV4::try_from_slice(&amm_id.data.borrow())?;
-
-    msg!("{}", stake.swap_quote_in_amount / 1000000000);
-    msg!("{}", stake.swap_quote_out_amount / 1000000000);
-
     if stake.swap_quote_in_amount > query.min_quote_in {
       return Ok(());
     }
@@ -60,12 +58,13 @@ pub fn process_buy<'a>(
     if current < stake.pool_open_time {
       return Ok(());
     }
-    
-    // let diferent = stake.swap_quote_in_amount - stake.swap_quote_out_amount;
-    // if diferent > query.min_quote_in {
-    //   return Ok(());
-    // }
+  }
 
+  if query.side == 1 {
+    let diferent = stake.swap_quote_in_amount - stake.swap_quote_out_amount;
+    if diferent > query.min_quote_in {
+      return Ok(());
+    }
   }
 
   let data = Swap {
